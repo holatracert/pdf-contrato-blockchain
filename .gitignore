@@ -47,6 +47,7 @@ temp-*.pdf
 signed-documents/*.pdf
 signed-documents/*.html
 signed-documents/signatures.json
+signed-documents/blockchain-mock.json
 test-pdf/
 test-signed/
 

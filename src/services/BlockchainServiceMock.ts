@@ -1,14 +1,48 @@
 import { BlockchainConfig, DocumentInfo, DocumentRegistrationResult } from '../types';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 
 /**
  * Mock del servicio de blockchain para desarrollo y pruebas
+ * Persiste los documentos en un archivo JSON
  */
 export class BlockchainServiceMock {
   private config: BlockchainConfig;
   private documents: Map<string, DocumentInfo> = new Map();
+  private storageFile: string;
 
-  constructor(config: BlockchainConfig) {
+  constructor(config: BlockchainConfig, storageFile: string = './signed-documents/blockchain-mock.json') {
     this.config = config;
+    this.storageFile = storageFile;
+    this.loadDocuments();
+  }
+
+  /**
+   * Carga documentos desde el archivo de almacenamiento
+   */
+  private loadDocuments(): void {
+    try {
+      if (existsSync(this.storageFile)) {
+        const data = readFileSync(this.storageFile, 'utf8');
+        const docs = JSON.parse(data);
+        this.documents = new Map(docs);
+        console.log(`[MOCK] Cargados ${this.documents.size} documentos desde blockchain mock`);
+      }
+    } catch (error) {
+      console.error('[MOCK] Error cargando documentos:', error);
+    }
+  }
+
+  /**
+   * Guarda documentos en el archivo de almacenamiento
+   */
+  private saveDocuments(): void {
+    try {
+      const docs = Array.from(this.documents.entries());
+      writeFileSync(this.storageFile, JSON.stringify(docs, null, 2));
+    } catch (error) {
+      console.error('[MOCK] Error guardando documentos:', error);
+    }
   }
 
   /**
@@ -29,6 +63,7 @@ export class BlockchainServiceMock {
       };
       
       this.documents.set(documentHash, documentInfo);
+      this.saveDocuments(); // Guardar cambios
       
       console.log(`[MOCK] Transacción simulada: ${mockTxHash}`);
       console.log(`[MOCK] Documento registrado en blockchain simulada`);
